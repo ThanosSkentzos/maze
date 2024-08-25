@@ -6,7 +6,7 @@ class Window():
         self.height = height
         self.__root = Tk()
         self.__root.title = 'window'
-        self.canvas = Canvas()
+        self.canvas = Canvas(self.__root, bg="white", height=height*1.2, width=width*1.2)
         self.canvas.pack()
         self.running = False
         self.__root.protocol("WM_DELETE_WINDOW", self.close)
