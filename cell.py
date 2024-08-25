@@ -60,4 +60,4 @@ class Cell:
         y2 = (other._y1+other._y2)//2
 
         line = Line(Point(x1,y1),Point(x2,y2))
-        self._win.draw_line(line)
+        self._win.draw_line(line,color)

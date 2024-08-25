@@ -45,7 +45,7 @@ class Maze():
         self._animate()
 
 
-    def _animate(self,t = 0.001):
+    def _animate(self,t = 0.0001):
         if self.win is None: return
         self.win.redraw()
         sleep(t)
@@ -62,9 +62,7 @@ class Maze():
         # print("current: ",i,j)
         while True:
             to_visit = []
-            neighbors = []
-            for k,l in zip([i-1,i,i,i+1],[j,j-1,j+1,j]):
-                neighbors.append((k,l))
+            neighbors = [(k,l) for k,l in  zip([i-1,i,i,i+1],[j,j-1,j+1,j])]
             # print("neighbors: ",neighbors)
             not_visited = [(k,l) for k,l in neighbors
                 if 0<=k<self.num_cols
@@ -74,12 +72,12 @@ class Maze():
             if len(not_visited)==0:
                 self._draw_cell(i,j)
                 return
-            target_xy = not_visited[random.randrange(0,len(not_visited))]
-            x,y = target_xy
-            direction = neighbors.index(target_xy)
+            next_index = not_visited[random.randrange(0,len(not_visited))]
+            x,y = next_index
+            direction = neighbors.index(next_index)
             if x<0 or y<0 or x>self.num_cols or y>self.num_rows:
                 continue
-            target = self._cells[target_xy[0]][target_xy[1]]
+            target = self._cells[next_index[0]][next_index[1]]
 
 
             # print("direction choice:",direction)
@@ -104,8 +102,67 @@ class Maze():
                     target.has_left_wall=False
 
             # sleep(0.05)
+            #
+
     def _reset_cells_visited(self):
         for col in self._cells:
             for c in col:
                 c.visited = False
         print("Maze Ready.")
+
+    def solve(self):
+        result = self.solve_r(0,0)
+        if result:
+            print("solved")
+        else:
+            print("Cannot solve")
+
+    def solve_r(self,i,j):
+        self._animate()
+        self._cells[i][j].visited = True
+        if i==self.num_cols-1 and j==self.num_rows-1:
+            return True
+        else:
+            neighbors = [(k,l) for k,l in  zip([i-1,i,i,i+1],[j,j-1,j+1,j])]
+            print(i,j," neighbors",neighbors)
+            not_visited = [(k,l) for k,l in neighbors
+                if 0<=k<=self.num_cols-1
+                and 0<=l<=self.num_rows-1
+                and not self._cells[k][l].visited]
+            if len(not_visited)==0:
+                return False
+            for next_index in not_visited:
+                origin = self._cells[i][j]
+                target = self._cells[next_index[0]][next_index[1]]
+                # right
+                if next_index[0] == i + 1 and not origin.has_right_wall:
+                    origin.draw_move(target)
+                    correct_way = self.solve_r(*next_index)
+                    if correct_way:
+                        return True
+                    else:
+                        origin.draw_move(target,undo=True)
+                # left
+                if next_index[0] == i - 1 and not origin.has_left_wall:
+                    origin.draw_move(target)
+                    correct_way = self.solve_r(*next_index)
+                    if correct_way:
+                        return True
+                    else:
+                        origin.draw_move(target,undo=True)
+                # down
+                if next_index[1] == j + 1 and not origin.has_bottom_wall:
+                    origin.draw_move(target)
+                    correct_way = self.solve_r(*next_index)
+                    if correct_way:
+                        return True
+                    else:
+                        origin.draw_move(target,undo=True)
+                # up
+                if next_index[1] == j - 1 and not origin.has_top_wall:
+                    origin.draw_move(target)
+                    correct_way = self.solve_r(*next_index)
+                    if correct_way:
+                        return True
+                    else:
+                        origin.draw_move(target,undo=True)
